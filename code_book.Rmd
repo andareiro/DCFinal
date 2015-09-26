@@ -1,0 +1,30 @@
+---
+title: "DC Final Code Book"
+author: "Andareiro"
+date: "September 26, 2015"
+output: html_document
+---
+
+# Summary
+
+This file explains the variables present in the "tide means - accel set.txt" file.
+
+NOTE: This file borrows text directly form the source documents for the original data set, specifically "features_info.txt"
+
+The original data set can be found here: 
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
+
+## Variables
+
+Var Keyword      | Description
+-----------------|-------------------
+subject          | Unique identifier for test subject
+activity         | Physical activity performed while recording data
+t*               | Time-domain signals
+f*               | Frequency-fomain signales
+body/gravity     | Body or gravity signals
+acc/gyro         | Accelerometer vs. gyroscope signales
+jerk/jerkMag/etc | Subtypes of movement
+X, Y, Z          | Three axes of movement
+
