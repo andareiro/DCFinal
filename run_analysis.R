@@ -1,37 +1,70 @@
+## Data Cleaning Final - Analysis Code
+##
+## Andareiro, 26 September 2015
+
+## Load up the requisite libraries
+
+library(reshape2)
+library(plyr)
+library(dplyr)
+
 
 ## Go fetch and unzip our data
 dataURL = "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 download.file(dataURL, destfile="./fuci_dataset.zip")
 unzip("./fuci_dataset.zip")
 
-## Set our working directory to the data
-setwd("./UCI HAR Dataset")
-
 ## Create lists for labels and features
 
-activityLabels = read.table("activity_labels.txt", col.names=c("id", "Activity"))
-featuresLabels = read.table("features.txt")
+featuresLabels = read.table("./UCI HAR Dataset/features.txt")
 
+trainSubjects = read.table("./UCI HAR Dataset/train/subject_train.txt", col.names="subject")
+trainLabels = read.table("./UCI HAR Dataset/train/y_train.txt", col.names="label")
+trainSet = read.table("./UCI HAR Dataset/train/X_train.txt", col.names=featuresLabels$V2)
+trainSet = cbind(trainSubjects, trainLabels, trainSet)
 
+testSubjects = read.table("./UCI HAR Dataset/test/subject_test.txt", col.names="subject")
+testLabels = read.table("./UCI HAR Dataset/test/y_test.txt", col.names="label")
+testSet = read.table("./UCI HAR Dataset/test/X_test.txt", col.names=featuresLabels$V2)
+testSet = cbind(testSubjects, testLabels, testSet)
 
-trainSubjects = read.table("train/subject_train.txt", col.names="Subject")
-trainLabels = read.table("./train/y_train.txt", col.names="Label")
-trainSet = read.table("./train/X_train.txt", col.names=featuresLabels$V2)
-trainActivity <- merge(trainLabels, activityLabels, by.x="Label", by.y="id", all=T)
-trainSet = cbind(trainSubjects, Activity = trainActivity$Activity, trainSet)
+## Mark the two data sets before binding
+testSet$data_set <- "test"
+trainSet$data_set <- "train"
 
-testSubjects = read.table("test/subject_test.txt", col.names="Subject")
-testLabels = read.table("./test/y_test.txt", col.names="Label")
-testSet = read.table("./test/X_test.txt", col.names=featuresLabels$V2)
-testActivity <- merge(testLabels, activityLabels, by.x="Label", by.y="id", all=T)
-testSet = cbind(testSubjects, Activity = testActivity$Activity, testSet)
-
-## Stick the trianing and train data sets together
+## Join training and train data sets together
 fullSet = rbind(trainSet, trainSet)
 
-## Create a data set of the mean and std deviation values for all the entries
-meanstdSet <- select(fullSet, Subject, Activity, contains("mean"), contains("std"))
+## Neaten up and join on the activity labels
+activityLabels = read.table("./UCI HAR Dataset/activity_labels.txt", col.names=c("id", "activity"))
+activityLabels$activity <- tolower(activityLabels$activity)
+fullSet <- left_join(fullSet, activityLabels, by = c("label" = "id"))
 
-## Next step is to create a data set with the averages of each variable
-## by activity and subject, but I couldn't get there! This last part is
-## really tough!
+## Create a data set of the mean and std deviation values for all the entries
+meanStdSet <- select(fullSet, subject, activity, contains("mean"), contains("std"))
+
+## Neaten up variable names
+
+varNames <- names(meanStdSet)
+varNames <- gsub("\\.{3}", "_", varNames)
+varNames <- gsub("\\..$", "", varNames)
+varNames <- gsub("\\.{1}", "_", varNames)
+varNames <- tolower(varNames)
+names(meanStdSet) <- varNames
+
+## meanStdSet is done!
+
+## Now go through a complex set of manipulations to get a tidy means
+## set ready for export
+
+horizSet <- melt(meanStdSet, id.vars = c("subject", "activity"),
+                 variable.name = c("test_var"), value.name = "test_val")
+horizSet <- horizSet %>%
+  ungroup () %>%
+  group_by(subject, activity, test_var) %>%
+  dplyr::summarize(mean = mean(test_val))
+
+tidyMeans <- dcast(horizSet, subject + activity ~ test_var)
+write.table(tidyMeans, "./tidy means - accel set.txt", row.names = F)
+
+## Done!
