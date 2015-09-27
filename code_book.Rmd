@@ -21,10 +21,10 @@ Var Keyword      | Description
 -----------------|-------------------
 subject          | Unique identifier for test subject
 activity         | Physical activity performed while recording data
-t*               | Time-domain signals
-f*               | Frequency-fomain signales
-body/gravity     | Body or gravity signals
-acc/gyro         | Accelerometer vs. gyroscope signales
-jerk/jerkMag/etc | Subtypes of movement
-X, Y, Z          | Three axes of movement
+signal           | Signal form, time or frequency
+signal_type      | Signal origin, body or gravity
+jerk             | Flag if measurement of jerky movement
+calc             | Calculation type performed
+statistic        | Summary stastic calculated, mean or std. deviation
+axis             | Axis of movement, X Y or Z
 
